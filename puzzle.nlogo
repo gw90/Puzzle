@@ -72,8 +72,9 @@ to gridall [sl]
       ]
     ]
   ]
-  ask turtles with [(w / 2) - (abs xcor) < sl ][ die ]
-  ask turtles with [(h / 2) - (abs ycor) < sl ][ die ]
+  ask turtles with [(w / 2) - (abs xcor) < sl / 2 ][ die ]
+  ask turtles with [(h / 2) - (abs ycor) < sl / 2][ die ]
+  ;wait 18
   ask turtles [
     set heading 0
     square sl xcor ycor
