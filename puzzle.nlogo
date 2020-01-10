@@ -134,6 +134,27 @@ to drawpiece
   ]
   setxy ix iy
 end
+
+
+
+to undraw
+  let sl length pcolors
+  let iy ycor
+  let ix xcor
+  setxy xcor - (sl / 2) ycor + (sl / 2)
+  set heading 90
+  foreach pcolors [row ->
+    set xcor ix - (sl / 2)
+    foreach row [cellcolor ->
+      set pcolor 0
+      fd 1
+    ]
+    set ycor ycor - 1
+  ]
+  setxy ix iy
+end
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -169,6 +190,40 @@ BUTTON
 182
 mona lisa
 import-pcolors-rgb \"monalisa.png\"
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+25
+230
+151
+263
+clearpatches
+ask patches [ set pcolor 0 ]
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+0
+302
+200
+335
+clear turts and drawing
+ask turtles [ die ]\ncd
 NIL
 1
 T
