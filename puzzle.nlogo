@@ -45,6 +45,7 @@ to-report image-height
 end
 
 to gridall [sl]
+  setup
   cro 2 [
     set size 50
     repeat world-height / sl [
@@ -79,6 +80,8 @@ to gridall [sl]
   ]
   ask turtles [
     set pcolors piececolors sl
+
+    setxy xcor + (sl / 2) ycor + (sl / 2)
   ]
 end
 
@@ -102,7 +105,6 @@ to-report piececolors [sl]
   let colors (list )
   let row (list )
   repeat sl [
-
     set row (list )
     set heading 90
     repeat sl [
@@ -113,6 +115,23 @@ to-report piececolors [sl]
     setxy (xcor - sl) (ycor - 1)
   ]
   report colors
+end
+
+to drawpiece
+  let sl length pcolors
+  let iy ycor
+  let ix xcor
+  setxy xcor - (sl / 2) ycor + (sl / 2)
+  set heading 90
+  foreach pcolors [row ->
+    set xcor ix - (sl / 2)
+    foreach row [cellcolor ->
+      set pcolor cellcolor
+      fd 1
+    ]
+    set ycor ycor - 1
+  ]
+  setxy ix iy
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
