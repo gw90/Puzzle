@@ -1,5 +1,5 @@
-globals [w h selecting-size coords ccoords]
-turtles-own [pcolors]
+globals [w h selecting-size coords ccoords going?]
+turtles-own [pcolors intentToTurnRight]
 
 to setup
   set w image-width
@@ -11,29 +11,43 @@ to startup
   user-message (word "Welcome to the puzzle. First, you will import an image to turn into a puzzle, make sure you have the image you want to use downloaded already. Alternatively, you can use on of the images that comes with this model.")
   import-pcolors-rgb user-file
   setup
-  user-message (word "After you click OK on this message, please go to the speed slider above the tick counter, and drag it all the way to the right.")
-  wait 5
+  ;user-message (word "After you click OK on this message, please go to the speed slider above the tick counter, and drag it all the way to the right.")
+  ;wait 5
   user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image showing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely.. When you are finished, press S to start the game.")
-  set selecting-size true
-
+  set going? false
 end
 
 to go
-  let gameover false
-  while [gameover = false] [
+  ;let gameover false
+  ;while [gameover = false] [
+  ;  every 1 [
     watchForMouseDrag
-  ]
+    ask turtles with [intentToTurnRight = true][
+      rt 90
+      drawpiece
+      set intentToTurnRight false
+    ]
+    tick
+  ;  ]
+  ;]
 end
 
 to startgame
-  set selecting-size false
-  ask turtles [ die ] cd
-  gridall
-  ask patches [ set pcolor 0]
-  scramble
-  tick
-  set ccoords piece-coords
-  go
+  ifelse going? [
+    go
+  ][
+    set selecting-size false
+    ask turtles [ die ] cd
+    gridall
+    ask patches [ set pcolor 0]
+    scramble
+    tick
+    set ccoords piece-coords
+    ask turtles [
+      set intentToTurnRight false
+    ]
+    set going? true
+  ]
 end
 
 to-report all-coords
@@ -130,7 +144,10 @@ to handleCollision
 end
 
 to-report fancyround [val nearest]
-  report nearest * (round (val / nearest))
+  let out nearest * (round (val / nearest))
+  if out > max-pycor [report out - nearest]
+  if out < min-pycor [report out + nearest]
+  report out
 end
 
 to watchForMouseDrag
@@ -141,7 +158,7 @@ to watchForMouseDrag
     ask piece [
       set shape "square"
       set size piece-size
-      undraw
+      undraw xcor ycor
     ]
     while [mouse-down? and mouse-inside?][
       ask piece [
@@ -339,24 +356,22 @@ to drawpiece
   rt -90
 end
 
-to undraw
-  let sl length pcolors
-  let iy ycor
-  let ix xcor
-  setxy xcor - (sl / 2) ycor + (sl / 2)
-  set heading 90
-  foreach pcolors [row ->
-    set xcor ix - (sl / 2)
-    foreach row [cellcolor ->
-      set pcolor 0
-      fd 1
-    ]
-    set ycor ycor - 1
+to-report ms [val]
+  if val > max-pycor [
+    report max-pycor
   ]
-  rt -90
-  setxy ix iy
+  report val
 end
 
+to undraw [x y]
+  ask patches with [
+  pxcor <= x + (piece-size / 2) and pxcor >= x - (piece-size / 2)
+  and
+  pycor <= y + (piece-size / 2) and pycor >= y - (piece-size / 2)
+  ][
+    set pcolor 0
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 203
@@ -445,7 +460,7 @@ piece-size
 piece-size
 30
 300
-110.0
+190.0
 10
 1
 NIL
@@ -475,7 +490,7 @@ BUTTON
 601
 Let the game begin!
 startgame
-NIL
+T
 1
 T
 OBSERVER
@@ -503,16 +518,16 @@ NIL
 1
 
 BUTTON
-45
-40
-159
-73
-NIL
-rotate-right
+25
+207
+139
+240
+rotate right
+if distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles [\n    set intentToTurnRight true\n  ]
 NIL
 1
 T
-OBSERVER
+TURTLE
 NIL
 D
 NIL
@@ -520,18 +535,35 @@ NIL
 1
 
 BUTTON
-59
-106
-163
-139
+36
+119
+140
+152
+rotate left
+if distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles [\n    set intentToTurnLeft true\n  ]
 NIL
-rotate-left
+1
+T
+TURTLE
 NIL
+A
+NIL
+NIL
+1
+
+BUTTON
+37
+287
+100
+320
+NIL
+go
+T
 1
 T
 OBSERVER
 NIL
-A
+NIL
 NIL
 NIL
 1
