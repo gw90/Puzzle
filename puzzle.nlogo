@@ -1,9 +1,165 @@
-globals [w h]
+globals [w h selecting-size coords ccoords]
 turtles-own [pcolors]
 
 to setup
   set w image-width
   set h image-height
+end
+
+to startup
+  ca reset-ticks
+  user-message (word "Welcome to the puzzle. First, you will import an image to turn into a puzzle, make sure you have the image you want to use downloaded already. Alternatively, you can use on of the images that comes with this model.")
+  import-pcolors-rgb user-file
+  setup
+  user-message (word "After you click OK on this message, please go to the speed slider above the tick counter, and drag it all the way to the right.")
+  wait 5
+  user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image showing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely.. When you are finished, press S to start the game.")
+  set selecting-size true
+
+end
+
+to go
+  let gameover false
+  while [gameover = false] [
+    watchForMouseDrag
+  ]
+end
+
+to startgame
+  set selecting-size false
+  ask turtles [ die ] cd
+  gridall
+  ask patches [ set pcolor 0]
+  scramble
+  tick
+  set ccoords piece-coords
+  go
+end
+
+to-report all-coords
+  let xs (list )
+  let ys (list )
+  let out (list )
+  let i 0
+  let going true
+  while [going] [
+    ifelse abs i < max-pxcor - (piece-size / 2) [
+      set xs lput i xs
+      set xs lput (i * -1) xs
+    ][
+      set going false
+    ]
+    set i i + piece-size
+  ]
+  set i 0
+  set going true
+  while [going] [
+    ifelse abs i < max-pycor - (piece-size / 2) [
+      set ys lput i ys
+      set ys lput (i * -1) ys
+    ][
+      set going false
+    ]
+    set i i + piece-size
+  ]
+  foreach xs [x ->
+    foreach ys [y ->
+      set out lput (list x y) out
+    ]
+  ]
+  report remove-duplicates out
+end
+
+to scramble
+  let cs shuffle all-coords
+  show length cs
+  show length [who] of turtles
+  wait 2
+  let i 0
+  foreach [who] of turtles [whom ->
+    ask turtle whom [
+      let mycoord item i cs
+      setxy item 0 mycoord item 1 mycoord
+      set i i + 1
+    ]
+  ]
+  ask turtles [set heading one-of [0 90 180 270]]
+  ask turtles [drawpiece]
+end
+
+to rotate-right
+  let piece one-of turtles with [distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles]
+  ask piece [
+    rt 90
+    drawpiece
+  ]
+end
+
+to rotate-left
+  let piece one-of turtles with [distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles]
+  ask piece [
+    rt -90
+    drawpiece
+  ]
+end
+
+to-report my-coords
+  report (list xcor ycor)
+end
+
+to-report piece-coords
+  report [my-coords] of turtles
+end
+
+;to-report coordsWithWho
+;  report (list who xcor ycor)
+;end
+
+;to-report total-coords
+;  report sort [coordsWithWho] of turtles
+;end
+
+to-report solved?
+  report sort piece-coords = sort ccoords
+end
+
+to handleCollision
+  ask other turtles-here [
+    show who
+  ]
+end
+
+to-report fancyround [val nearest]
+  report nearest * (round (val / nearest))
+end
+
+to watchForMouseDrag
+  if mouse-down? and mouse-inside? [
+    let piece one-of turtles with [distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles]
+    let offx ([xcor] of piece) - mouse-xcor
+    let offy ([ycor] of piece) - mouse-ycor
+    ask piece [
+      set shape "square"
+      set size piece-size
+      undraw
+    ]
+    while [mouse-down? and mouse-inside?][
+      ask piece [
+        setxy mouse-xcor mouse-ycor
+        ;undraw
+        ;drawpiece
+        display
+      ]
+    ]
+  ]
+  ask turtles with [shape = "square"] [
+    setxy fancyround mouse-xcor piece-size fancyround mouse-ycor piece-size
+    set shape "default"
+    set size 50
+    handleCollision
+    drawpiece
+  ]
+  tick
 end
 
 to-report image-width
@@ -35,17 +191,56 @@ to-report image-height
       while [pcolor = 0][
         fd 1
       ]
-      set height xcor * 2
+      set height ycor * 2
     ][
-      set height world-width
+      set height world-height
     ]
     die
   ]
   report height
 end
 
-to gridall [sl]
-  setup
+to demogrid
+  let sl piece-size
+  cd ask turtles [ die ]
+  cro 2 [
+    set size 0
+    repeat world-height / sl [
+      fd sl
+      hatch 1
+    ]
+  ]
+  cro 1 [
+    set size 0
+  ]; for the center
+  ask turtles [
+    hatch 1 [
+      set heading 90
+      repeat (world-width / sl) / 2 [
+        fd sl
+        hatch 1
+      ]
+    ]
+    hatch 1 [
+      set heading 270
+      repeat (world-width / sl) / 2 [
+        fd sl
+        hatch 1
+      ]
+    ]
+  ]
+  ask turtles with [(w / 2) - (abs xcor) < sl / 2 ][ die ]
+  ask turtles with [(h / 2) - (abs ycor) < sl / 2][ die ]
+  ;wait 18
+  ask turtles [
+    set heading 0
+    square sl xcor ycor
+  ]
+  tick
+end
+
+to gridall
+  let sl piece-size
   cro 2 [
     set size 50
     repeat world-height / sl [
@@ -83,7 +278,9 @@ to gridall [sl]
     set pcolors piececolors sl
 
     setxy xcor + (sl / 2) ycor + (sl / 2)
+    set heading 0
   ]
+  tick
 end
 
 to square [sl x y]
@@ -122,20 +319,25 @@ to drawpiece
   let sl length pcolors
   let iy ycor
   let ix xcor
-  setxy xcor - (sl / 2) ycor + (sl / 2)
-  set heading 90
+  rt 90
+  fd -1 * (sl / 2)
+  rt -90
+  fd (sl / 2)
+  rt 90
   foreach pcolors [row ->
-    set xcor ix - (sl / 2)
+
     foreach row [cellcolor ->
       set pcolor cellcolor
       fd 1
     ]
-    set ycor ycor - 1
+    rt 90
+    fd 1
+    rt -90
+    fd 0 - sl
   ]
   setxy ix iy
+  rt -90
 end
-
-
 
 to undraw
   let sl length pcolors
@@ -151,15 +353,15 @@ to undraw
     ]
     set ycor ycor - 1
   ]
+  rt -90
   setxy ix iy
 end
 
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+203
 10
-1059
+1052
 860
 -1
 -1
@@ -177,34 +379,17 @@ GRAPHICS-WINDOW
 420
 -420
 420
-0
-0
+1
+1
 1
 ticks
-30.0
+60.0
 
 BUTTON
-19
-149
-120
-182
-mona lisa
-import-pcolors-rgb \"monalisa.png\"
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-25
-230
-151
-263
+1144
+235
+1270
+268
 clearpatches
 ask patches [ set pcolor 0 ]
 NIL
@@ -218,10 +403,10 @@ NIL
 1
 
 BUTTON
-0
-302
-200
-335
+1119
+307
+1319
+340
 clear turts and drawing
 ask turtles [ die ]\ncd
 NIL
@@ -230,6 +415,123 @@ T
 OBSERVER
 NIL
 NIL
+NIL
+NIL
+1
+
+BUTTON
+70
+358
+158
+391
+startup
+startup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+7
+432
+179
+465
+piece-size
+piece-size
+30
+300
+110.0
+10
+1
+NIL
+HORIZONTAL
+
+BUTTON
+17
+497
+92
+530
+NIL
+gridall
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+23
+568
+201
+601
+Let the game begin!
+startgame
+NIL
+1
+T
+OBSERVER
+NIL
+S
+NIL
+NIL
+1
+
+BUTTON
+17
+630
+117
+663
+NIL
+demogrid
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+45
+40
+159
+73
+NIL
+rotate-right
+NIL
+1
+T
+OBSERVER
+NIL
+D
+NIL
+NIL
+1
+
+BUTTON
+59
+106
+163
+139
+NIL
+rotate-left
+NIL
+1
+T
+OBSERVER
+NIL
+A
 NIL
 NIL
 1
