@@ -1,5 +1,6 @@
-globals [w h selecting-size coords ccoords going?]
+globals [w h selecting-size coords ccoords going? gridding?]
 turtles-own [pcolors intentToTurnRight]
+
 
 to setup
   set w image-width
@@ -15,6 +16,7 @@ to startup
   ;wait 5
   user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image showing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely.. When you are finished, press S to start the game.")
   set going? false
+  set gridding? true
 end
 
 to go
@@ -33,6 +35,9 @@ to go
 end
 
 to startgame
+  ifelse gridding? [
+    demogrid
+  ][
   ifelse going? [
     go
   ][
@@ -47,6 +52,7 @@ to startgame
       set intentToTurnRight false
     ]
     set going? true
+  ]
   ]
 end
 
@@ -172,7 +178,7 @@ to watchForMouseDrag
   ask turtles with [shape = "square"] [
     setxy fancyround mouse-xcor piece-size fancyround mouse-ycor piece-size
     set shape "default"
-    set size 50
+    set size 0
     handleCollision
     drawpiece
   ]
@@ -259,14 +265,14 @@ end
 to gridall
   let sl piece-size
   cro 2 [
-    set size 50
+    set size 0
     repeat world-height / sl [
       fd sl
       hatch 1
     ]
   ]
   cro 1 [
-    set size 50
+    set size 0
   ]; for the center
   ask turtles [
     hatch 1 [
@@ -342,9 +348,10 @@ to drawpiece
   fd (sl / 2)
   rt 90
   foreach pcolors [row ->
-
     foreach row [cellcolor ->
-      set pcolor cellcolor
+      if (abs (xcor - ix) <= piece-size / 2 and abs (ycor - iy) <= piece-size / 2) = true [
+        set pcolor cellcolor
+      ]
       fd 1
     ]
     rt 90
@@ -460,7 +467,7 @@ piece-size
 piece-size
 30
 300
-190.0
+70.0
 10
 1
 NIL
@@ -469,10 +476,10 @@ HORIZONTAL
 BUTTON
 17
 497
-92
+150
 530
-NIL
-gridall
+Done gridding
+set gridding? false
 NIL
 1
 T
@@ -523,7 +530,7 @@ BUTTON
 139
 240
 rotate right
-if distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles [\n    set intentToTurnRight true\n  ]
+if distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles [\n    rt 90\n    drawpiece\n  ]
 NIL
 1
 T
@@ -540,7 +547,7 @@ BUTTON
 140
 152
 rotate left
-if distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles [\n    set intentToTurnLeft true\n  ]
+if distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles [\n    rt -90\n    drawpiece\n  ]
 NIL
 1
 T
