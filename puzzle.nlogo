@@ -1,5 +1,5 @@
 globals [w h coords gstate correctturtling orderedturts]
-turtles-own [pcolors intentToTurnRight]
+turtles-own [pcolors grid?]
 
 
 to setup
@@ -22,6 +22,11 @@ to go
   ]
   foreach orderedturts [whom ->
     ask turtle whom [drawpiece]
+  ]
+  ifelse show-grid? [
+    demogrid
+  ][
+    cd
   ]
   tick
 end
@@ -56,7 +61,7 @@ to startgame
   ]
   if gstate = "winning" [
     user-message (word "You win!")
-    stop
+    set gstate "over"
   ]
 end
 
@@ -220,8 +225,9 @@ end
 
 to demogrid
   let sl piece-size
-  cd ask turtles [ die ]
+  cd ask turtles with [grid? = true] [ die ]
   cro 2 [
+    set grid? true
     set size 0
     repeat world-height / sl [
       fd sl
@@ -229,10 +235,12 @@ to demogrid
     ]
   ]
   cro 1 [
+    set grid? true
     set size 0
   ]; for the center
   ask turtles [
     hatch 1 [
+      set grid? true
       set heading 90
       repeat (world-width / sl) / 2 [
         fd sl
@@ -240,6 +248,7 @@ to demogrid
       ]
     ]
     hatch 1 [
+      set grid? true
       set heading 270
       repeat (world-width / sl) / 2 [
         fd sl
@@ -247,12 +256,13 @@ to demogrid
       ]
     ]
   ]
-  ask turtles with [(w / 2) - (abs xcor) < sl / 2 ][ die ]
-  ask turtles with [(h / 2) - (abs ycor) < sl / 2][ die ]
+  ask turtles with [(w / 2) - (abs xcor) < sl / 2 and grid? = true][ die ]
+  ask turtles with [(h / 2) - (abs ycor) < sl / 2 and grid? = true][ die ]
   ;wait 18
-  ask turtles [
+  ask turtles with [grid? = true][
     set heading 0
     square sl xcor ycor
+    die
   ]
   tick
 end
@@ -428,45 +438,11 @@ ticks
 60.0
 
 BUTTON
-1144
-235
-1270
-268
-clearpatches
-ask patches [ set pcolor 0 ]
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-1119
-307
-1319
-340
-clear turts and drawing
-ask turtles [ die ]\ncd
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-70
-358
-158
-391
-startup
+40
+828
+148
+861
+New Game
 startup
 NIL
 1
@@ -479,25 +455,25 @@ NIL
 1
 
 SLIDER
-7
-432
-179
-465
+15
+345
+187
+378
 piece-size
 piece-size
 30
 300
-100.0
+160.0
 10
 1
 NIL
 HORIZONTAL
 
 BUTTON
-17
-497
-150
-530
+35
+385
+168
+418
 Done gridding
 set gstate \"setup\"
 NIL
@@ -511,10 +487,10 @@ NIL
 1
 
 BUTTON
-23
-568
-201
-601
+11
+43
+189
+76
 Let the game begin!
 startgame
 T
@@ -522,16 +498,16 @@ T
 T
 OBSERVER
 NIL
-S
+B
 NIL
 NIL
 1
 
 BUTTON
-25
-207
-139
-240
+933
+870
+1047
+903
 rotate right
 if distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles [\n    rt 90\n    drawpiece\n  ]
 NIL
@@ -545,10 +521,10 @@ NIL
 1
 
 BUTTON
-36
-119
-140
-152
+824
+870
+928
+903
 rotate left
 if distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles [\n    rt -90\n    drawpiece\n  ]
 NIL
@@ -560,6 +536,72 @@ A
 NIL
 NIL
 1
+
+SWITCH
+36
+571
+169
+604
+show-grid?
+show-grid?
+0
+1
+-1000
+
+TEXTBOX
+54
+23
+204
+41
+Press this first!
+12
+0.0
+1
+
+BUTTON
+502
+870
+633
+903
+Show the grid
+set show-grid? true
+NIL
+1
+T
+OBSERVER
+NIL
+S
+NIL
+NIL
+1
+
+BUTTON
+638
+870
+763
+903
+Hide the grid
+set show-grid? false
+NIL
+1
+T
+OBSERVER
+NIL
+H
+NIL
+NIL
+1
+
+MONITOR
+1065
+15
+1122
+60
+Time:
+time
+0
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -921,5 +963,5 @@ true
 Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 @#$#@#$#@
-0
+1
 @#$#@#$#@
