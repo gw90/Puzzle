@@ -1,4 +1,4 @@
-globals [w h selecting-size coords ccoords going? gridding?]
+globals [w h coords ccoords gstate correctturtling]
 turtles-own [pcolors intentToTurnRight]
 
 
@@ -8,42 +8,44 @@ to setup
 end
 
 to startup
-  ca reset-ticks
-  user-message (word "Welcome to the puzzle. First, you will import an image to turn into a puzzle, make sure you have the image you want to use downloaded already. Alternatively, you can use on of the images that comes with this model.")
-  import-pcolors-rgb user-file
-  setup
-  ;user-message (word "After you click OK on this message, please go to the speed slider above the tick counter, and drag it all the way to the right.")
-  ;wait 5
-  user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image showing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely.. When you are finished, press S to start the game.")
-  set going? false
-  set gridding? true
+  set gstate "initialize"
 end
 
 to go
   ;let gameover false
   ;while [gameover = false] [
   ;  every 1 [
-    watchForMouseDrag
-    ask turtles with [intentToTurnRight = true][
-      rt 90
-      drawpiece
-      set intentToTurnRight false
-    ]
-    tick
+  watchForMouseDrag
+  if [ident] of turtles = correctturtling [
+    set gstate "winning"
+  ]
+  tick
   ;  ]
   ;]
 end
 
 to startgame
-  ifelse gridding? [
+  if gstate = "initialize" [
+    ca reset-ticks
+    user-message (word "Welcome to the puzzle. First, you will import an image to turn into a puzzle, make sure you have the image you want to use downloaded already. Alternatively, you can use on of the images that comes with this model.")
+    import-pcolors-rgb user-file
+    setup
+    ;user-message (word "After you click OK on this message, please go to the speed slider above the tick counter, and drag it all the way to the right.")
+    ;wait 5
+    user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image showing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely.. When you are finished, press S to start the game.")
+    set gstate "gridding"
+  ]
+  if gstate = "gridding" [
     demogrid
-  ][
-  ifelse going? [
+  ]
+  if gstate = "going" [
     go
-  ][
-    set selecting-size false
+  ]
+  if gstate = "setup" [
     ask turtles [ die ] cd
     gridall
+    show count turtles
+    set correctturtling ([ident] of turtles)
     ask patches [ set pcolor 0]
     scramble
     tick
@@ -51,8 +53,11 @@ to startgame
     ask turtles [
       set intentToTurnRight false
     ]
-    set going? true
+    set gstate "going"
   ]
+  if gstate = "winning" [
+    user-message (word "You win!")
+    stop
   ]
 end
 
@@ -159,6 +164,9 @@ end
 to watchForMouseDrag
   if mouse-down? and mouse-inside? [
     let piece one-of turtles with [distancexy mouse-xcor mouse-ycor = min [distancexy mouse-xcor mouse-ycor] of turtles]
+    if piece = nobody [
+      stop
+    ]
     let offx ([xcor] of piece) - mouse-xcor
     let offy ([ycor] of piece) - mouse-ycor
     ask piece [
@@ -292,6 +300,15 @@ to gridall
   ]
   ask turtles with [(w / 2) - (abs xcor) < sl / 2 ][ die ]
   ask turtles with [(h / 2) - (abs ycor) < sl / 2][ die ]
+  ask turtles [
+    if count other turtles-here = 1 [
+      ;show [who] of other turtles-here
+      if (item 0 [who] of other turtles-here) > who [
+        die
+      ]
+    ]
+    ;show other turtles-here
+  ]
   ;wait 18
   ask turtles [
     set heading 0
@@ -322,13 +339,13 @@ to square [sl x y]
 end
 
 to-report piececolors [sl]
-  setxy (xcor - ( sl / 2 )) (ycor + ( sl / 2 )); go to top left corner
+  setxy (xcor - ceiling ( sl / 2 )) (ycor + ceiling ( sl / 2 )); go to top left corner
   let colors (list )
   let row (list )
-  repeat sl [
+  repeat sl + 1 [
     set row (list )
     set heading 90
-    repeat sl [
+    repeat sl + 1 [
       set row lput pcolor row
       fd 1
     ]
@@ -378,6 +395,10 @@ to undraw [x y]
   ][
     set pcolor 0
   ]
+end
+
+to-report ident
+  report (list xcor ycor heading who)
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -467,7 +488,7 @@ piece-size
 piece-size
 30
 300
-70.0
+110.0
 10
 1
 NIL
@@ -479,7 +500,7 @@ BUTTON
 150
 530
 Done gridding
-set gridding? false
+set gstate \"setup\"
 NIL
 1
 T
