@@ -1,4 +1,4 @@
-globals [w h coords ccoords gstate correctturtling]
+globals [w h coords gstate correctturtling]
 turtles-own [pcolors intentToTurnRight]
 
 
@@ -11,12 +11,16 @@ to startup
   set gstate "initialize"
 end
 
+to-report sorted-idents
+  report sort-by [ [it1 it2] -> item 3 it1 < item 3 it2 ] [ident] of turtles
+end
+
 to go
   ;let gameover false
   ;while [gameover = false] [
   ;  every 1 [
   watchForMouseDrag
-  if [ident] of turtles = correctturtling [
+  if sorted-idents = correctturtling [
     set gstate "winning"
   ]
   tick
@@ -45,11 +49,9 @@ to startgame
     ask turtles [ die ] cd
     gridall
     show count turtles
-    set correctturtling ([ident] of turtles)
     ask patches [ set pcolor 0]
     scramble
     tick
-    set ccoords piece-coords
     ask turtles [
       set intentToTurnRight false
     ]
@@ -134,18 +136,6 @@ end
 
 to-report piece-coords
   report [my-coords] of turtles
-end
-
-;to-report coordsWithWho
-;  report (list who xcor ycor)
-;end
-
-;to-report total-coords
-;  report sort [coordsWithWho] of turtles
-;end
-
-to-report solved?
-  report sort piece-coords = sort ccoords
 end
 
 to handleCollision
@@ -313,10 +303,14 @@ to gridall
   ask turtles [
     set heading 0
     square sl xcor ycor
+    set heading 0
   ]
+
+  set correctturtling sorted-idents
+  show (word "correctturtling according to gridall:")
+  show correctturtling
   ask turtles [
     set pcolors piececolors sl
-
     setxy xcor + (sl / 2) ycor + (sl / 2)
     set heading 0
   ]
@@ -400,6 +394,7 @@ end
 to-report ident
   report (list xcor ycor heading who)
 end
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 203
@@ -488,7 +483,7 @@ piece-size
 piece-size
 30
 300
-110.0
+200.0
 10
 1
 NIL
@@ -529,23 +524,6 @@ NIL
 1
 
 BUTTON
-17
-630
-117
-663
-NIL
-demogrid
-NIL
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
 25
 207
 139
@@ -575,23 +553,6 @@ T
 TURTLE
 NIL
 A
-NIL
-NIL
-1
-
-BUTTON
-37
-287
-100
-320
-NIL
-go
-T
-1
-T
-OBSERVER
-NIL
-NIL
 NIL
 NIL
 1
