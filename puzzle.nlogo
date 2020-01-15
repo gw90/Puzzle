@@ -1,4 +1,4 @@
-globals [w h coords gstate correctturtling]
+globals [w h coords gstate correctturtling orderedturts]
 turtles-own [pcolors intentToTurnRight]
 
 
@@ -16,16 +16,14 @@ to-report sorted-idents
 end
 
 to go
-  ;let gameover false
-  ;while [gameover = false] [
-  ;  every 1 [
   watchForMouseDrag
   if sorted-idents = correctturtling [
     set gstate "winning"
   ]
+  foreach orderedturts [whom ->
+    ask turtle whom [drawpiece]
+  ]
   tick
-  ;  ]
-  ;]
 end
 
 to startgame
@@ -36,7 +34,7 @@ to startgame
     setup
     ;user-message (word "After you click OK on this message, please go to the speed slider above the tick counter, and drag it all the way to the right.")
     ;wait 5
-    user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image showing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely.. When you are finished, press S to start the game.")
+    user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image ;ing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely.. When you are finished, press S to start the game.")
     set gstate "gridding"
   ]
   if gstate = "gridding" [
@@ -48,14 +46,13 @@ to startgame
   if gstate = "setup" [
     ask turtles [ die ] cd
     gridall
-    show count turtles
+    set orderedturts sort [who] of turtles
+    ; count turtles
     ask patches [ set pcolor 0]
     scramble
     tick
-    ask turtles [
-      set intentToTurnRight false
-    ]
     set gstate "going"
+    cd
   ]
   if gstate = "winning" [
     user-message (word "You win!")
@@ -99,8 +96,8 @@ end
 
 to scramble
   let cs shuffle all-coords
-  show length cs
-  show length [who] of turtles
+  ; length cs
+  ; length [who] of turtles
   wait 2
   let i 0
   foreach [who] of turtles [whom ->
@@ -140,7 +137,7 @@ end
 
 to handleCollision
   ask other turtles-here [
-    show who
+    ; who
   ]
 end
 
@@ -264,6 +261,7 @@ to gridall
   let sl piece-size
   cro 2 [
     set size 0
+    show world-height / sl
     repeat world-height / sl [
       fd sl
       hatch 1
@@ -292,14 +290,11 @@ to gridall
   ask turtles with [(h / 2) - (abs ycor) < sl / 2][ die ]
   ask turtles [
     if count other turtles-here = 1 [
-      ;show [who] of other turtles-here
       if (item 0 [who] of other turtles-here) > who [
         die
       ]
     ]
-    ;show other turtles-here
   ]
-  ;wait 18
   ask turtles [
     set heading 0
     square sl xcor ycor
@@ -307,10 +302,8 @@ to gridall
   ]
 
   set correctturtling sorted-idents
-  show (word "correctturtling according to gridall:")
-  show correctturtling
   ask turtles [
-    set pcolors piececolors sl
+    set pcolors piececolors
     setxy xcor + (sl / 2) ycor + (sl / 2)
     set heading 0
   ]
@@ -332,19 +325,19 @@ to square [sl x y]
   setxy x y
 end
 
-to-report piececolors [sl]
-  setxy (xcor - ceiling ( sl / 2 )) (ycor + ceiling ( sl / 2 )); go to top left corner
+to-report piececolors
+  setxy (xcor - ceiling ( piece-size / 2 )) (ycor + ceiling ( piece-size / 2 )); go to top left corner
   let colors (list )
   let row (list )
-  repeat sl + 1 [
+  repeat piece-size [ ; every row
     set row (list )
     set heading 90
-    repeat sl + 1 [
+    repeat piece-size [; every cell in the row
       set row lput pcolor row
       fd 1
     ]
     set colors lput row colors
-    setxy (xcor - sl) (ycor - 1)
+    setxy (xcor - piece-size) (ycor - 1)
   ]
   report colors
 end
@@ -395,12 +388,23 @@ to-report ident
   report (list xcor ycor heading who)
 end
 
+
+to solve
+  ask patches [ set pcolor 0]
+  foreach correctturtling [x ->
+    ask turtle item 3 x [
+      setxy item 0 x item 1 x
+      set heading item 2 x
+      drawpiece
+    ]
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-203
-10
-1052
-860
+201
+14
+1050
+864
 -1
 -1
 1.0
@@ -483,7 +487,7 @@ piece-size
 piece-size
 30
 300
-200.0
+100.0
 10
 1
 NIL
@@ -559,7 +563,7 @@ NIL
 
 @#$#@#$#@
 ## WHAT IS IT?
-
+anything necessary
 (a general understanding of what the model is trying to show or explain)
 
 ## HOW IT WORKS
@@ -591,7 +595,8 @@ NIL
 (models in the NetLogo Models Library and elsewhere which are of related interest)
 
 ## CREDITS AND REFERENCES
-
+Alex Nobert - testing
+testing, code, ideas
 (a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
 @#$#@#$#@
 default
