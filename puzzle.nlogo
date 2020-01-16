@@ -15,6 +15,14 @@ to-report sorted-idents
   report sort-by [ [it1 it2] -> item 3 it1 < item 3 it2 ] [ident] of turtles
 end
 
+to-report seconds
+  ifelse round (timer mod 60) < 10 [
+    report (word "0" round (timer mod 60))
+  ][
+    report round (timer mod 60)
+  ]
+end
+
 to go
   watchForMouseDrag
   if sorted-idents = correctturtling [
@@ -28,7 +36,7 @@ to go
   ][
     cd
   ]
-  set time (word (floor (timer / 60)) ":" round (timer mod 60))
+  set time (word (floor (timer / 60)) ":" seconds)
   tick
 end
 
@@ -544,7 +552,7 @@ SWITCH
 604
 show-grid?
 show-grid?
-1
+0
 1
 -1000
 
