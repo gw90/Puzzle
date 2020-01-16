@@ -1,4 +1,4 @@
-globals [w h coords gstate correctturtling orderedturts]
+globals [w h coords gstate correctturtling orderedturts time]
 turtles-own [pcolors grid?]
 
 
@@ -28,18 +28,17 @@ to go
   ][
     cd
   ]
+  set time (word (floor (timer / 60)) ":" round (timer mod 60))
   tick
 end
 
 to startgame
   if gstate = "initialize" [
     ca reset-ticks
-    user-message (word "Welcome to the puzzle. First, you will import an image to turn into a puzzle, make sure you have the image you want to use downloaded already. Alternatively, you can use on of the images that comes with this model.")
+    user-message (word "Welcome to the puzzle. First, you will select an image to turn into a puzzle, make sure you have the image you want to use downloaded already. \n\nAlternatively, you can use on of the images that comes with this model.")
     import-pcolors-rgb user-file
     setup
-    ;user-message (word "After you click OK on this message, please go to the speed slider above the tick counter, and drag it all the way to the right.")
-    ;wait 5
-    user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image ;ing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely.. When you are finished, press S to start the game.")
+    user-message (word "Now, you need to decide the size of the pieces you want to use. Find the piece-size slider, and adjust it to the size you want. You will see a grid on your image showing where pieces will be drawn for the size you select. Any part outside of the grid will be removed entirely. \n\nWhen you are finished, press Done gridding.")
     set gstate "gridding"
   ]
   if gstate = "gridding" [
@@ -58,6 +57,7 @@ to startgame
     tick
     set gstate "going"
     cd
+    reset-timer
   ]
   if gstate = "winning" [
     user-message (word "You win!")
@@ -544,7 +544,7 @@ SWITCH
 604
 show-grid?
 show-grid?
-0
+1
 1
 -1000
 
@@ -595,13 +595,33 @@ NIL
 MONITOR
 1065
 15
-1122
+1230
 60
 Time:
 time
 0
 1
 11
+
+TEXTBOX
+35
+515
+185
+570
+You can click this to decide whether to show or hide the grid.
+12
+0.0
+1
+
+TEXTBOX
+20
+610
+180
+675
+                 Or\nPress S to show the grid\nPress H to hide it
+12
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
