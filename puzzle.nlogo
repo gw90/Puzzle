@@ -60,7 +60,7 @@ to startgame
     reset-timer
   ]
   if gstate = "winning" [
-    user-message (word "You win!")
+    user-message (word "Congratualtions, you have solved the puzzle in " time "!" "\n\n Press \"New Game\" to start a game anew.")
     set gstate "over"
   ]
 end
@@ -491,7 +491,7 @@ BUTTON
 43
 189
 76
-Let the game begin!
+Press this first!
 startgame
 T
 1
@@ -548,46 +548,19 @@ show-grid?
 1
 -1000
 
-TEXTBOX
-54
-23
-204
-41
-Press this first!
-12
-0.0
-1
-
 BUTTON
 502
 870
-633
+639
 903
-Show the grid
-set show-grid? true
+Show/Hide grid
+set show-grid? not show-grid?
 NIL
 1
 T
 OBSERVER
 NIL
-S
-NIL
-NIL
-1
-
-BUTTON
-638
-870
-763
-903
-Hide the grid
-set show-grid? false
-NIL
-1
-T
-OBSERVER
-NIL
-H
+G
 NIL
 NIL
 1
@@ -616,50 +589,36 @@ You can click this to decide whether to show or hide the grid.
 TEXTBOX
 20
 610
-180
-675
-                 Or\nPress S to show the grid\nPress H to hide it
+190
+671
+                 Or\nPress G to toggle the grid
+12
+0.0
+1
+
+TEXTBOX
+1065
+80
+1215
+235
+Drag and drop pieces\n\nPress A to rotate the piece under your mouse cursor to the left\n\nPress D to rotate it to the right
 12
 0.0
 1
 
 @#$#@#$#@
-## WHAT IS IT?
-anything necessary
-(a general understanding of what the model is trying to show or explain)
-
-## HOW IT WORKS
-
-(what rules the agents use to create the overall behavior of the model)
-
 ## HOW TO USE IT
+Press the button that says "Press this first"
+Follow the subsequent insturctions.
 
-(how to use the model, including a description of each of the items in the Interface tab)
+Use A and D to rotate the piece under your mouse-cursor left and right.
+Use G to toggle the grid.
 
-## THINGS TO NOTICE
-
-(suggested things for the user to notice while running the model)
-
-## THINGS TO TRY
-
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
-
-## EXTENDING THE MODEL
-
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
-
-## NETLOGO FEATURES
-
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
-
-## RELATED MODELS
-
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+When you wish to start a new game, press "New Game"
 
 ## CREDITS AND REFERENCES
 Alex Nobert - testing
 testing, code, ideas
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
 @#$#@#$#@
 default
 true
