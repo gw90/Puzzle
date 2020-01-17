@@ -471,7 +471,7 @@ piece-size
 piece-size
 30
 300
-160.0
+180.0
 10
 1
 NIL
@@ -614,6 +614,16 @@ Drag and drop pieces\n\nPress A to rotate the piece under your mouse cursor to t
 0.0
 1
 
+TEXTBOX
+25
+90
+175
+185
+At no point should the above button not be pressed.\ni.e. The above button should always be pressed.
+12
+0.0
+1
+
 @#$#@#$#@
 ## HOW TO USE IT
 Press the button that says "Press this first"
@@ -624,8 +634,11 @@ Use G to toggle the grid.
 
 When you wish to start a new game, press "New Game"
 
+Your goal: Solve the puzzle. All pieces must be in the appropriate location in the grid.
+
 ## CREDITS AND REFERENCES
 Alex Nobert - testing
+Dorin Flocos
 testing, code, ideas
 @#$#@#$#@
 default
