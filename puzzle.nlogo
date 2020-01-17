@@ -1,6 +1,5 @@
-globals [w h coords gstate correctturtling orderedturts time]
+globals [w h coords gstate correctturtling orderedturts time pastcoords]
 turtles-own [pcolors grid?]
-
 
 to setup
   set w image-width
@@ -150,7 +149,8 @@ end
 
 to handleCollision
   ask other turtles-here [
-    ; who
+    setxy item 0 pastcoords item 1 pastcoords
+    drawpiece
   ]
 end
 
@@ -167,9 +167,9 @@ to watchForMouseDrag
     if piece = nobody [
       stop
     ]
-    let offx ([xcor] of piece) - mouse-xcor
-    let offy ([ycor] of piece) - mouse-ycor
+
     ask piece [
+      set pastcoords (list xcor ycor)
       set shape "square"
       set size piece-size
       undraw xcor ycor
@@ -406,7 +406,6 @@ to-report ident
   report (list xcor ycor heading who)
 end
 
-
 to solve
   ask patches [ set pcolor 0]
   foreach correctturtling [x ->
@@ -552,7 +551,7 @@ SWITCH
 604
 show-grid?
 show-grid?
-0
+1
 1
 -1000
 
