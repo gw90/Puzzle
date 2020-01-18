@@ -640,6 +640,8 @@ Many thanks to to the following people for testing my program and gifting me wit
 - Alex Nobert
 - Dorin Flocos
 - Cynthia Tan
+
+Also, many thanks to Wikimedia Commons for providing images.
 @#$#@#$#@
 default
 true
