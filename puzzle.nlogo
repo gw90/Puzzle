@@ -636,9 +636,10 @@ When you wish to start a new game, press "New Game"
 Your goal: Solve the puzzle. All pieces must be in the appropriate location in the grid.
 
 ## CREDITS AND REFERENCES
-Alex Nobert - testing
-Dorin Flocos
-testing, code, ideas
+Many thanks to to the following people for testing my program and gifting me with inspiration
+- Alex Nobert
+- Dorin Flocos
+- Cynthia Tan
 @#$#@#$#@
 default
 true
